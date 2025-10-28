@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  api:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./src/AccountsChu.API/Dockerfile
+    container_name: accountchu-api
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=AccountChu;Username=postgres;Password=1q2w3e4r@#$
+      
+  db:
+    image: postgres:15
+    container_name: accountchu-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "1q2w3e4r@#$"
+      POSTGRES_DB: AccountChu
+    ports:
+      - "5433:5432"
+    volumes:
+      - accountchu_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d AccountChu"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  accountchu_data:
