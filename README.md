@@ -15,7 +15,7 @@
 
 1. **Clonar o repositório**
    ```bash
-   git clone <https://github.com/GVDAM/AccontBankChuSA.git>
+   git clone https://github.com/GVDAM/AccontBankChuSA.git
    ```
 
 2. **Acessar o diretório raiz (onde está a solução `AccountsChu.sln`)**
