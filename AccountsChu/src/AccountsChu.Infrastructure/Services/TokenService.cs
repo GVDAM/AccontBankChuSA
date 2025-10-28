@@ -19,7 +19,7 @@ namespace AccountsChu.Infrastructure.Services
         public string GenerateToken(Customer customer)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]!);
 
             var claims = new[]
             {

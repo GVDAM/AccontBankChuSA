@@ -43,8 +43,6 @@ namespace AccountsChu.Infrastructure.Mappings
                 .HasForeignKey(x => x.ReceiverAccountId)
                 .HasConstraintName("fk_receiver_account");
 
-            //builder.HasIndex(x => x.ReceiverAccountId).IsUnique().HasDatabaseName("idx_receiver_account_id");
-            //builder.HasIndex(x => x.SenderAccountId).IsUnique().HasDatabaseName("idx_sender_account_id");
         }
     }
 }

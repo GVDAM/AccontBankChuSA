@@ -1,8 +1,8 @@
 ﻿using AccountsChu.Domain.Commands.Account;
-using Microsoft.AspNetCore.Mvc;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
+using MediatR;
 
 namespace AccountsChu.API.Controllers.v1
 {
@@ -20,6 +20,7 @@ namespace AccountsChu.API.Controllers.v1
 
 
         [HttpPost]
+        [Description("Criação da conta")]
         public async Task<IActionResult> Post([FromBody] CreateAccountCommand account)
         {
             var result = await _sender.Send(account);
@@ -42,11 +43,8 @@ namespace AccountsChu.API.Controllers.v1
             return BadRequest(result);
         }
 
-        /// <summary>
-        /// Extrato da conta do usuário logado
-        /// </summary>
-        /// <returns></returns>
         [HttpGet("extrato")]
+        [Description("Extrato da conta do usuário logado")]
         public async Task<IActionResult> GetStatementAccount()
         {
             var result = await _sender.Send(new StatementAccountCommand());

@@ -58,12 +58,12 @@ namespace AccountsChu.Domain.Handlers
                 if (userAlreadyRegistered)
                     return new GenericCommandResult(false, "Cliente já tem uma conta ativa!");
 
-                var accountAlreadyCreated = await _repository.VerifyAccountByAgencyAndNumberAsync(request.Agency, request.Number);
+                var accountAlreadyCreated = await _repository.VerifyAccountByAgencyAndNumberAsync(request.agency, request.number);
 
                 if (accountAlreadyCreated)
                     return new GenericCommandResult(false, "Esta conta já existe!");
 
-                var account = new Account(request.Agency, request.Number, request.Balance, customerId);
+                var account = new Account(request.agency, request.number, request.balance, customerId);
 
                 await _repository.AddAsync(account);
 

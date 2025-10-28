@@ -62,7 +62,6 @@ namespace AccountsChu.API.Common
                     }
                 });
 
-                //opt.CustomSchemaIds(n => n.FullName);
             });
         }
 

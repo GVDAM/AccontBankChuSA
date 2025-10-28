@@ -2,5 +2,5 @@
 
 namespace AccountsChu.Domain.Commands.Account
 {
-    public record CreateAccountCommand(Int16 Agency, Int32 Number, decimal Balance) : IRequest<GenericCommandResult>;
+    public record CreateAccountCommand(Int16 agency, Int32 number, decimal balance) : IRequest<GenericCommandResult>;
 }

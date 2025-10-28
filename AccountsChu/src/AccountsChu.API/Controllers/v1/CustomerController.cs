@@ -1,6 +1,7 @@
 ﻿using AccountsChu.Domain.Commands.Customer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel;
 using MediatR;
 
 namespace AccountsChu.API.Controllers.v1
@@ -18,6 +19,7 @@ namespace AccountsChu.API.Controllers.v1
 
 
         [HttpPost]
+        [Description("Criar um usuário para poder utilizar o sistema")]
         public async Task<IActionResult> Post([FromBody] CreateCustomerCommand customer)
         {
             var result = await _mediator.Send(customer);
@@ -29,6 +31,7 @@ namespace AccountsChu.API.Controllers.v1
         }
         
         [HttpPost("login")]
+        [Description("Fazer Login na plataforma")]
         public async Task<IActionResult> Login([FromBody] LoginCustomerCommand customer)
         {
             var result = await _mediator.Send(customer);
