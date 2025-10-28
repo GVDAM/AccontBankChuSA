@@ -1,8 +1,8 @@
-﻿using AccountsChu.Domain.Commands;
+﻿using AccountsChu.Domain.Commands.Customer;
 using AccountsChu.Domain.Commands.Account;
-using AccountsChu.Domain.Commands.Customer;
-using AccountsChu.Domain.Entities;
 using AccountsChu.Domain.Repositories;
+using AccountsChu.Domain.Entities;
+using AccountsChu.Domain.Commands;
 using AccountsChu.Domain.Services;
 using MediatR;
 

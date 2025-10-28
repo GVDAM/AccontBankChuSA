@@ -1,40 +1,3 @@
-/* 
-PSEUDOCODE PLAN (detailed):
-1. Create test class `AccountHandlerTests` in namespace `AccountsChu.Tests.Domain.Handlers`.
-2. For each handler method create unit tests:
-   - CreateAccount:
-     a. Test success path:
-        - Mock ICustomerContextService.GetCustomerId() to return a Guid.
-        - Mock IAccountRepository.VerifyAccountByCustomer -> false.
-        - Mock IAccountRepository.VerifyAccountByAgencyAndNumberAsync -> false.
-        - Mock IAccountRepository.AddAsync to capture argument.
-        - Build CreateAccountCommand instance and call handler.Handle.
-        - Assert result.Success true, message contains success, repository.AddAsync was called.
-     b. Test failure when customer already has account:
-        - VerifyAccountByCustomer -> true.
-        - Call handler.Handle and assert result.Success false and message indicates already has account.
-   - TedTransaction:
-     a. Test success transfer:
-        - Setup customer id.
-        - Setup sender account from GetAccountByCustomer (with sufficient balance).
-        - Setup receiver account from GetByAgencyAndNumberAsync (different CustomerId).
-        - Setup HasBalanceEnough -> true.
-        - Setup BrasilApiService.GetHolydays -> return list that doesn't match today.
-        - Ensure today is not weekend by choosing test time (can't change DateTime.UtcNow) so ensure holiday list won't match and if test runs on weekend it still should behave; to be robust, if DayOfWeek weekend we skip holiday/weekend checks by making HasBalanceEnough false? Instead, rely on injected services and accept that tests may run on weekends — to make robust: mock BrasilApiService.GetHolydays to return some holiday with a date far in the past so the holiday check is false; weekends are runtime dependent. To avoid failure on weekends, simulate current date by ensuring test sets up accounts and then, if UtcNow is weekend, assert that handler returns failure message about weekends; but better to assert either success or specific weekend/holiday failure? Simpler: call handler and assert that when transfer succeeds repository.Update and transaction repository CreateTransaction are invoked OR if the current day blocks transfers, assert appropriate blocking message. To keep deterministic, we will assert for both possibilities by using conditional checks.
-        - Verify repository.Update called for both accounts and transaction created when success.
-     b. Test failure when not enough balance:
-        - HasBalanceEnough -> false and assert failure message.
-   - Statement:
-     a. Test success:
-        - Setup account from GetAccountByCustomer.
-        - Setup TransactionRepository.GetAllTransactions to return some transactions.
-        - Call handler.Handle and assert result.Success true and Data is TransactionDto with expected transactions count.
-3. To construct command objects robustly (unknown internal constructors/field names), use Activator.CreateInstance and a helper SetMemberValue to set either property or field by name (try both PascalCase and camelCase names).
-4. Use Moq for all dependencies and xUnit for test methods.
-5. Keep tests minimal but assert important interactions (Verify calls and result shapes).
-
-*/
-
 using AccountsChu.Domain.Commands.Account;
 using AccountsChu.Domain.Repositories;
 using AccountsChu.Domain.Services;
@@ -55,44 +18,6 @@ namespace AccountsChu.Tests.Domain.Handlers
 {
     public class AccountHandlerTests
     {
-        private static void SetMemberValue(object obj, string name, object value)
-        {
-            var type = obj.GetType();
-            // Try property PascalCase
-            var prop = type.GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-            if (prop != null && prop.CanWrite)
-            {
-                prop.SetValue(obj, value);
-                return;
-            }
-
-            // Try field
-            var field = type.GetField(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-            if (field != null)
-            {
-                field.SetValue(obj, value);
-                return;
-            }
-
-            // Try exact-case property
-            var propExact = type.GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
-            if (propExact != null && propExact.CanWrite)
-            {
-                propExact.SetValue(obj, value);
-                return;
-            }
-
-            // Try exact-case field
-            var fieldExact = type.GetField(name, BindingFlags.Public | BindingFlags.Instance);
-            if (fieldExact != null)
-            {
-                fieldExact.SetValue(obj, value);
-                return;
-            }
-
-            throw new InvalidOperationException($"No writable member '{name}' found on type {type.FullName}");
-        }
-
         [Fact]
         public async Task CreateAccount_Should_Create_When_Valid()
         {
@@ -200,9 +125,7 @@ namespace AccountsChu.Tests.Domain.Handlers
             var customerContextMock = new Mock<ICustomerContextService>();
             customerContextMock.Setup(c => c.GetCustomerId()).Returns(customerId);
 
-            // Make BrasilApiService return a holiday far in the past so it won't match UtcNow
             var brasilApiMock = new Mock<IBrasilApiService>();
-            //brasilApiMock.Setup(b => b.GetHolydays()).ReturnsAsync(new List<(string Date, string Name)> { ("2025-01-01", "PastHoliday") });
             brasilApiMock.Setup(b => b.GetHolydays()).ReturnsAsync(new List<Holydays> { new Holydays { Date = "2025-01-01", Name = "PastHoliday" } });
 
             var transactionRepoMock = new Mock<ITransactionRepository>();
@@ -215,7 +138,7 @@ namespace AccountsChu.Tests.Domain.Handlers
             // Act
             var result = await handler.Handle((TedTransactionAccountCommand)cmd, CancellationToken.None);
 
-            // Assert: behavior can vary if test runs on weekend -> check both possible outcomes deterministically.
+            // Assert
             if (DateTime.UtcNow.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
             {
                 Assert.False(result.IsSuccess);
@@ -268,7 +191,6 @@ namespace AccountsChu.Tests.Domain.Handlers
             Assert.True(result.IsSuccess);
             Assert.Contains("Extrato", result.Message ?? string.Empty, StringComparison.OrdinalIgnoreCase);
 
-            // Data should be TransactionDto with transactions
             var dto = result.Data as TransactionDto;
             Assert.NotNull(dto);
             Assert.Equal(account.Agency, dto.Agency);
